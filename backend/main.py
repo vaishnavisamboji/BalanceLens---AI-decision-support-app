@@ -15,7 +15,16 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
 from langchain_community.document_loaders import TextLoader
-from langchain_community.embeddings import HuggingFaceEmbeddings
+from sentence_transformers import SentenceTransformer
+from langchain_core.embeddings import Embeddings as LCEmbeddings
+
+class OnnxEmbeddings(LCEmbeddings):
+    def __init__(self, model_name: str):
+        self.model = SentenceTransformer(model_name, backend="onnx")
+    def embed_documents(self, texts):
+        return self.model.encode(texts, convert_to_numpy=True).tolist()
+    def embed_query(self, text):
+        return self.model.encode([text], convert_to_numpy=True)[0].tolist()
 from langchain_community.vectorstores import FAISS
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
@@ -217,7 +226,7 @@ def _startup():
     else:
         print("[BalanceLens] Groq API key loaded ✓")
 
-    embeddings = HuggingFaceEmbeddings(model_name=EMBED_MODEL)
+    embeddings = OnnxEmbeddings(model_name=EMBED_MODEL)
 
     if not _index_exists(INDEX_PATH):
         print("[BalanceLens] Building FAISS index from knowledge base...")
