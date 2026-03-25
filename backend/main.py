@@ -15,10 +15,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
 from langchain_community.document_loaders import TextLoader
-from sentence_transformers import SentenceTransformer
-from langchain_core.embeddings import Embeddings as LCEmbeddings
-
-from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_community.embeddings import FastEmbedEmbeddings
 from langchain_community.vectorstores import FAISS
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
