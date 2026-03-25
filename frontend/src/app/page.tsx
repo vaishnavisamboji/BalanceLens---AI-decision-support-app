@@ -125,7 +125,7 @@ async function callBackend(
 // ─── Schedule helpers ─────────────────────────────────────────────────────────
 function toMins(t: string): number {
   if (!t || t.trim() === "") return -1;
-  const clean = t.trim();
+  const clean = t.trim().replace(".", ":");  // ← normalize 8.30 → 8:30
   const m = clean.match(/^(\d{1,2})(?::(\d{2}))?\s*(am|pm)?$/i);
   if (!m) return -1;
   let h = parseInt(m[1]);
@@ -146,11 +146,9 @@ function fmtMins(mins: number): string {
 }
 function parseShiftTimes(raw: string): [number, number] {
   if (!raw.trim()) return [-1, -1];
-  const tokens = raw.match(/\d{1,2}(?::\d{2})?\s*(?:am|pm)/gi) ?? [];
+  const tokens = raw.match(/\d{1,2}[:.]\d{2}\s*(?:am|pm)|\d{1,2}\s*(?:am|pm)/gi) ?? [];
   if (tokens.length >= 2) return [toMins(tokens[0]!), toMins(tokens[tokens.length - 1]!)];
   if (tokens.length === 1) return [toMins(tokens[0]!), -1];
-  const t24 = raw.match(/\b([01]?\d|2[0-3]):[0-5]\d\b/g) ?? [];
-  if (t24.length >= 2) return [toMins(t24[0]!), toMins(t24[t24.length - 1]!)];
   return [-1, -1];
 }
 function guessDuration(task: string): number {
@@ -583,6 +581,15 @@ function LandingPage({ onNav, dark }: { onNav: (p: PageType) => void; dark: bool
       {/* Safety */}
       <div style={{ background: C.safetyBg, borderTop: `2px solid ${C.danger}`, padding: "14px 20px", textAlign: "center", fontSize: 13, color: C.textSecondary }}>
         BalanceLens is a decision companion, not a replacement for professional mental health support. If you feel unsafe, contact emergency services or call/text <strong style={{ color: C.danger }}>988</strong> (U.S.).
+      </div>
+
+      {/* Disclaimer footer */}
+      <div style={{ borderTop: `1px solid ${C.cardBorder}`, padding: "24px 20px", textAlign: "center" }}>
+        <p style={{ fontSize: 12, color: C.textMuted, maxWidth: 600, margin: "0 auto", lineHeight: 1.7 }}>
+          ⚠️ BalanceLens is an AI decision-support tool, not a licensed therapist or medical advisor.
+          It is designed for everyday prioritization decisions only. If you are in crisis, please call or text{" "}
+          <strong>988</strong> (Suicide & Crisis Lifeline).
+        </p>
       </div>
     </main>
   );
